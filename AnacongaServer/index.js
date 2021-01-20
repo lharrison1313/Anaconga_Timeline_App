@@ -7,6 +7,7 @@ const dburl = "mongodb://localhost:27017"
 //express HTTP server
 const express = require("express");
 const app = express();
+app.use(express.json());
 const port = 3001;
 
 
@@ -33,9 +34,23 @@ app.get("/get-timeline",(req,res) =>{
 
 app.post("/create-timeline", (req,res) =>{
 
+  var timeline_info = req.body;
+  var timeline = {timeline: []};
+
+  mongo.connect(dburl,(error,db)=>{
+    assert.strictEqual(null,error);
+    db.db("Anaconga").collection("timelines").insertOne(timeline, null, (error,res) =>{ 
+      timeline_info["timeline_id"] = new mongo.ObjectID(res.insertedId);
+      db.db("Anaconga").collection("events").insertOne(timeline_info)
+    });
+  });
+
+  res.send();
+
 });
 
 app.post("/update-timeline", (req,res)=>{
+
 
 });
 
