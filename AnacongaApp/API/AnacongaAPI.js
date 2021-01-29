@@ -1,22 +1,15 @@
 
-export function getTimeline(id,callback){
-    fetch("http://10.0.2.2:3001/get-timeline?id="+id)
+export function getTimeline(id){
+    return fetch("http://10.0.2.2:3001/get-timeline?id="+id)
     .then((response) => response.json())
-    .then((json) => {
-      callback(json);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
 }
 
-export function getEvents(num_events,callback){
-    fetch("http://10.0.2.2:3001/events")
+export function getEvents(num_events){
+    return fetch("http://10.0.2.2:3001/get-events")
     .then((response) => response.json())
-    .then((json) => {
-        callback(json);
-    })
-    .catch((error) => {
-        console.error(error);
-    });
+}
+
+export function updateTimelineItems(item, id){
+  return fetch("http://10.2.2:3001/upadte-timeline-items")
+  .then((response) => response.json())
 }

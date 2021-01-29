@@ -11,12 +11,15 @@ app.use(express.json());
 const port = 3001;
 
 
-app.get("/events",(req,res)=>{
+app.get("/get-events",(req,res)=>{
 
   mongo.connect(dburl, (error,db) => {
     assert.strictEqual(null,error);
     db.db("Anaconga").collection("events").find({}).toArray()
-    .then( (data) => res.json(data));
+    .then( (data) => {
+      res.json(data)
+      db.close()
+    });
   });
   
 });
@@ -24,33 +27,66 @@ app.get("/events",(req,res)=>{
 app.get("/get-timeline",(req,res) =>{
 
   let id = req.query.id;
+
   mongo.connect(dburl,(error,db)=>{
     assert.strictEqual(null,error);
     db.db("Anaconga").collection("timelines").findOne({"_id": new mongo.ObjectId(id)})
-    .then( (data) =>  res.json(data));
+    .then( (data) => {
+      res.json(data);
+      db.close();
+    });
   });
 
 });
 
 app.post("/create-timeline", (req,res) =>{
 
-  var timeline_info = req.body;
-  var timeline = {timeline: []};
+  let timeline_info = req.body;
+  let timeline = {timeline: []};
 
   mongo.connect(dburl,(error,db)=>{
     assert.strictEqual(null,error);
+    //creating timeline
     db.db("Anaconga").collection("timelines").insertOne(timeline, null, (error,res) =>{ 
+      assert.strictEqual(null,error);
       timeline_info["timeline_id"] = new mongo.ObjectID(res.insertedId);
-      db.db("Anaconga").collection("events").insertOne(timeline_info)
+      //creating event
+      db.db("Anaconga").collection("events").insertOne(timeline_info, null, (error,res)=>{
+        assert.strictEqual(null, error);
+        res.send();
+        db.close();
+      });
     });
   });
 
-  res.send();
-
 });
 
-app.post("/update-timeline", (req,res)=>{
+app.post("/update-timeline-items", (req,res)=>{
 
+  let id = req.body.id;
+  let item = req.body.item
+  item["key"] = new mongo.ObjectID()
+  let updateDoc = {
+    $push:{
+      timeline: item
+    }
+  }
+
+  mongo.connect(dburl, (error,db) =>{
+
+    assert.strictEqual(null,error);
+
+    db.db("Anaconga").collection("timelines").updateOne({"_id": new mongo.ObjectId(id)}, updateDoc, null, (error) =>{
+      assert.strictEqual(null, error);
+      res.send()
+      db.close()
+    });
+
+  });
+  
+});
+
+app.delete("/delete-timeline", (req,res) =>{
 
 });
 

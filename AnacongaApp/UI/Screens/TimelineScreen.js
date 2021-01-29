@@ -18,14 +18,10 @@ class TimelineScreen extends React.Component{
   componentDidMount(){
     
     let id = this.props.route.params.timeline_id;
-    getTimeline(id,(data)=>{this.setState({timeline: data.timeline})});
+    getTimeline(id)
+    .then( data => this.setState({timeline: data.timeline}) )
+    .catch( error => console.log(error));
 
-  }
-
-  addItem = () =>{
-    if(this.ws.readyState == this.ws.OPEN){
-      this.ws.send("add")
-    }
   }
 
   render(){

@@ -25,9 +25,9 @@ class ExploreScreen extends React.Component{
   }
 
   componentDidMount(){
-
-    getEvents(0,(data)=>{this.setState({data:data})});
-
+    getEvents(0)
+    .then( data => this.setState({data:data}))
+    .catch( error => console.log(error));
   }
 
   render(){
