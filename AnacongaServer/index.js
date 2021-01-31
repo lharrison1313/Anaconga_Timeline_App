@@ -6,7 +6,6 @@ const dburl = "mongodb://localhost:27017"
 
 //express HTTP server
 const express = require("express");
-const { send } = require("process");
 const app = express();
 app.use(express.json());
 const port = 3001;
@@ -89,6 +88,30 @@ app.post("/add-timeline-item", (req,res)=>{
   
 });
 
+app.post("/update-event", (req,res) => {
+  let id = req.body.id;
+  let info = req.body.info;
+
+  let filter = {
+    "_id": new mongo.ObjectId(id)
+  }
+  let updateDoc = {
+    $set:{
+      "title": info.title,
+      "image": info.image
+    }
+  }
+
+  mongo.connect(dburl, (error, db) => {
+      assert.strictEqual(null,error);
+      db.db("Anaconga").collection("events").updateOne(filter, updateDoc, null, (error) => {
+        assert.strictEqual(null,error);
+        res.send();
+        db.close();
+      });
+    });
+});
+
 app.post("/update-timeline-item", (req,res) => {
   let tid = req.body.tid;
   let iid = req.body.iid;
@@ -113,17 +136,14 @@ app.post("/update-timeline-item", (req,res) => {
       assert.strictEqual(null,error);
       res.send();
       db.close();
-    })
-  })
+    });
+  });
 
-})
+});
 
 app.delete("/delete-timeline-item", (req,res) =>{
   let tid = req.body.tid;
   let iid = req.body.iid;
-
-  console.log(tid);
-  console.log(iid);
 
   let filter = {
     "_id": new mongo.ObjectId(tid)
@@ -149,6 +169,27 @@ app.delete("/delete-timeline-item", (req,res) =>{
 
 app.delete("/delete-timeline", (req,res) =>{
 
+  let eid = req.body.eid;
+  let tid = req.body.tid;
+
+  let filterEvent = {
+    "_id": new mongo.ObjectId(eid)
+  } 
+  let filterTimeline = {
+    "_id": new mongo.ObjectId(tid)
+  }
+
+  mongo.connect(dburl, (error,db) =>{
+    assert.strictEqual(null,error);
+    db.db("Anaconga").collection("events").deleteOne(filterEvent,null, (error) =>{
+      assert.strictEqual(null,error);
+      db.db("Anaconga").collection("timelines").deleteOne(filterTimeline,null,(error)=>{
+        assert.strictEqual(null,error);
+        res.send();
+        db.close
+      });
+    });
+  });
 });
 
 app.listen(port,()=>{
